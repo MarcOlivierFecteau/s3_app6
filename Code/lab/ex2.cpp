@@ -3,20 +3,22 @@
 #include <mutex>
 #include <queue>
 #include <cstdlib>      // rand
+#include <chrono>
+#include <condition_variable>
 
 namespace {
     std::queue<int> queue_;
     std::mutex      mutex_;
-    bool is_prod_done_ = false;
+    std::condition_variable cv_;
     bool should_run_ = true;
 }
 
 void add_to_queue(int v)
 {
     // Fournit un accès synchronisé à queue_ pour l'ajout de valeurs.
-    
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::unique_lock<std::mutex> lock(mutex_);
     queue_.push(v);
+    cv_.notify_one();
 }
 
 void producteur()
@@ -30,9 +32,6 @@ void producteur()
         int r = rand() % 1001 + 1000;
         add_to_queue(r);
 
-        // Signale au consommateur qu'une donnée est disponible.
-        is_prod_done_ = true;
-
         // Bloque le fil pour 50 ms:
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
@@ -44,29 +43,27 @@ void consommateur()
 {
     while (should_run_)
     {
-        std::lock_guard<std::mutex> lock(mutex_);
+        std::unique_lock<std::mutex> lock(mutex_);
+        cv_.wait(lock, []{ return !queue_.empty(); });
         // On doit toujours vérifier si un objet std::queue n'est pas vide
         // avant de retirer un élément.
-        if (!queue_.empty() && is_prod_done_) {
+        if (!queue_.empty()) {
             int v = queue_.front(); // Copie le premier élément de la queue.
             queue_.pop();           // Retire le premier élément.
-            if (queue_.empty()) {
-                // Si la queue est vide, on réinitialise le flag de production.
-                is_prod_done_ = false;
-            }
 
-            printf("Reçu: %d\n", v);
-            if (v == 0) {
+            if (v != 0)
+                printf("Reçu: %d\n", v);
+            else
                 // Travail terminé, on quitte la fonction du consommateur.
                 return;
-            }
         }
     }
-
 }
 
 int main(int argc, char** argv)
 {
+    auto start_time = std::chrono::high_resolution_clock::now();
+
     std::thread thread_producteur(producteur);
     std::thread thread_consommateur(consommateur);
 
@@ -74,7 +71,10 @@ int main(int argc, char** argv)
     should_run_ = false;    // Signal de terminaison pour le consommateur
     thread_consommateur.join();
 
-    printf("Fin du programme.\n");
+    auto end_time = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+    printf("Le programme a pris %lld ms.\n", duration.count());
+
     return 0;
 }
 

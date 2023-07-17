@@ -70,15 +70,41 @@ A:	Le *thread thread_consommateur* lit continuellement la file de données,
 #### Question 2.2
 
 Q:	Ajoutez une pause entre les lectures. Est-ce que ça diminue la consommation?  
-A:	Oui, la consommation initiale était de X%, et la consommation avec pauses est de Y%.
+A:	Non, l'utilisation est toujours à 100%.
 
 #### Question 2.3
 
 Q:	Implémentez un mécanisme de synchronisation.  
-A:	La solution proposée utilise un *boolean flag* nommé *is_prod_done_*, qui devient *VRAI* 
-	lorsque le producteur a ajouté une donnée à la file. Le *consommateur* ne lie les données 
-	de la file que si *is_prod_done_* est *VRAI*, et ne change la valeur de *is_prod_done_* 
-	que lorsque la file est vidée.
+A:	La solution proposée utilise un *condition_variable* nommé *cv_*. Lorsque *producteur* a terminé 
+	sa tâche, il envoie un signal *notify*. Le *consommateur* attend (*wait*) le signal, et exécute 
+	sa tâche seulement lorsqu'il reçoit le signal, diminuant substantiellement l'utilisation du fil.
+
+```cpp
+#include <condition_variable>
+
+namespace {
+    std::condition_variable cv_;
+}
+
+void add_to_queue(int v)
+{
+    // Fournit un accès synchronisé à queue_ pour l'ajout de valeurs.
+    std::unique_lock<std::mutex> lock(mutex_);
+    queue_.push(v);
+    cv_.notify_one();
+}
+
+void consommateur()
+{
+    while (should_run_)
+    {
+        std::unique_lock<std::mutex> lock(mutex_);
+        cv_.wait(lock, []{ return !queue_.empty(); });
+       	
+       	// [...]
+    }
+}
+```
 
 #### Question 2.4 (facultative)
 
