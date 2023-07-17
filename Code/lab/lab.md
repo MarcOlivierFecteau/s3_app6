@@ -22,7 +22,23 @@ A:	La section critique se situe dans la fonction *accum*, lorsqu'un entier *i* e
 
 Q:	Mettez en place un mécanisme de synchronisation pour contrôler l’accès à cette variable.  
 A:	Trois méthodes sont possibles: *lock-unlock*, *lock_guard*, et *unique_lock*. *unique_lock* 
-	a été choisie (voir ex1.cpp).
+	a été choisie. Le code ci-dessous représente les changements apportés:
+
+```cpp
+namespace {
+	int somme_;     // Contiendra la somme (devrait être 50005000).
+    	std::mutex m;  // Mutex pour protéger la variable somme_.
+}
+
+void accum(int d, int f)
+{
+    // Additionne les nombres de d à f (inclusivement) à la variable somme_.
+    for (int i = d; i <= f; ++i) {
+        std::unique_lock<std::mutex> lock(m);	// Protection des donnees avec unique_lock
+        somme_ += i;
+    }
+}
+```
 
 #### Question 1.4
 
@@ -36,9 +52,9 @@ A:	N'utiliser qu'un seul thread. Alternativement, et plus efficacement, le progr
 	ci-dessous:
 
 ```cpp
-	void accum(int d, int f) {
-		somme = (f - d) * (f - d + 1) / 2;
-	}
+void accum(int d, int f) {
+	somme = (f - d) * (f - d + 1) / 2;
+}
 ```
 
 En utilisant cette méthode, le temps d'exécution est TOUJOURS le même (*O(1)*).
