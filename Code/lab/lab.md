@@ -14,7 +14,7 @@ A:	la variable *somme_*.
 
 #### Question 1.2
 
-Q:	Identifiez la section critique.
+Q:	Identifiez la section critique.  
 A:	La section critique se situe dans la fonction *accum*, lorsqu'un entier *i* est ajouté à 
 	*somme_* sans protection de donnée.
 
@@ -71,3 +71,29 @@ Q:	Implémentez une façon d'arrêter *consommateur* avec le *boolean flag* nomm
 A:	La solution proposée remplace la boucle infinie dans *consommateur* par une boucle conditionnelle 
 	selon *should_run_*. Lorsque la tâche de *producteur* est terminée, et que *join()* a été appelée, 
 	*main* change la valeur de *should_run_* pour *FAUX*, et *consommateur* devrait s'arrêter.
+
+### Exercice 3 - Comparaison avec IEEE 754
+
+#### Question 3.1
+
+Q:	Expliquez pourquoi le test de 𝑦 == 0.0 ne semble pas fonctionner, particulièrement lorsque
+	𝑥 == 1.0.  
+A:	La valeur exacte de *y* n'est pas tout à fait 0.0, en raison de la précision de la représentation 
+	binaire d'un nombre décimal selon IEEE 754 pour un nombre 32-bits (binary-32, *single precision*).  
+	
+	*N.B.* La précision est de 2^(-23).
+
+#### Question 3.2
+
+Q:	Modifiez le code, de sorte qu'il soit fonctionnel pour une précision de 5e-5.  
+A:	On évalue *y* dans un intervalle, tel que montré ci-dessous:
+
+```cpp
+	if (y >= -0.0001 && y <= 0.0001) {                           
+            printf("!!!");                        
+        }
+```
+
+## Partie 2 - Implémentation d'un PID sur Arduino
+
+\[À faire\]
