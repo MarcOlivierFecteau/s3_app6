@@ -74,6 +74,7 @@ int main(int argc, char** argv)
     should_run_ = false;    // Signal de terminaison pour le consommateur
     thread_consommateur.join();
 
+    printf("Fin du programme.\n");
     return 0;
 }
 
