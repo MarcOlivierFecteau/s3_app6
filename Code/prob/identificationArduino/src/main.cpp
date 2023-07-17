@@ -19,7 +19,7 @@
 #define POTPIN          A5          // Port analogique pour le potentiometre
 
 #define PASPARTOUR      64          // Nombre de pas par tour du moteur
-#define RAPPORTVITESSE  50          // Rapport de vitesse du moteur
+#define RAPPORTVITESSE  19          // Rapport de vitesse du moteur
 
 /*---------------------------- Variables globales ---------------------------*/
 
