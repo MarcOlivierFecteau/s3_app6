@@ -17,9 +17,9 @@ void add_to_queue(int v)
     queue_.push(v);
 }
 
-void prod()
+void producteur()
 {
-    // Produit 100 nombres aléatoires de 1000 à 2000 et les ajoute
+    // Produit 100 nombres aléatoires de 1000 à 2000 et les additionne
     // à une file d'attente (queue_) pour traitement.
     // À la fin, transmet "0", ce qui indique que le travail est terminé.
 
@@ -35,7 +35,7 @@ void prod()
     add_to_queue(0);
 }
 
-void cons()
+void consommateur()
 {
     while (true)
     {
@@ -58,11 +58,11 @@ void cons()
 
 int main(int argc, char** argv)
 {
-    std::thread t_prod(prod);
-    std::thread t_cons(cons);
+    std::thread thread_producteur(producteur);
+    std::thread thread_consommateur(consommateur);
 
-    t_prod.join();
-    t_cons.join();
+    thread_producteur.join();
+    thread_consommateur.join();
 
     return 0;
 }
