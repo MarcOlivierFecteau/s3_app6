@@ -37,12 +37,13 @@ void RobotDiag::start_recording() {
 
     // Démarre le simulateur:
     // TODO: Supprimer cette ligne si vous testez avec un seul moteur
-    robotsim::init(this, 8, 10, 3);   // Spécifie le nombre de moteurs à 
-                                      // simuler (8) et le délai moyen entre
+    // robotsim::init(this, 1, 10, 3);   // Spécifie le nombre de moteurs à 
+                                      // simuler (1) et le délai moyen entre
                                       // les événements (10 ms) plus ou moins
                                       // un nombre aléatoire (3 ms).
 
     // TODO : Lancement du fil.
+    
 }
 
 void RobotDiag::stop_recording() {
