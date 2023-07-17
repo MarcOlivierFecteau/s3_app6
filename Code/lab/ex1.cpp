@@ -5,13 +5,18 @@
 // Espace anonyme pour les variables globales et partagées :
 namespace {
     int somme_;     // Contiendra la somme (devrait être 50005000).
+    std::mutex m;
 }
 
 void accum(int d, int f)
 {
-    // Ajoute les nombres de d à f (inclusivement) à la variable somme_.
+    // Additionne les nombres de d à f (inclusivement) à la variable somme_.
     for (int i = d; i <= f; ++i) {
-        somme_ += i;
+        {
+            // Activation de la protection des donnees avec unique_lock
+            std::lock (L1, L2, L3, L4);
+            somme_ += i;
+        }
     }
 }
 
@@ -27,6 +32,12 @@ int main(int argc, char** argv)
      
     for (int i = 0; i < 100; ++i) {
         somme_ = 0;
+
+        // Protection des donnees avec unique_lock
+        std::unique_lock<std::mutex> L1(m);
+        std::unique_lock<std::mutex> L2(m);
+        std::unique_lock<std::mutex> L3(m);
+        std::unique_lock<std::mutex> L4(m);
 
         // Démarre 4 fils avec chacun une portion égale de 1 à 10000 :
         std::thread t1(accum, 1,    2500);
