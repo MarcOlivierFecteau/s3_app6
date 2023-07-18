@@ -215,17 +215,18 @@ void readMsg(){
 double PIDmeasurement(){
   if (millis() - lastTime >= 200)
   {
+    uint32_t dt = millis() - lastTime;
     lastTime = millis();
-    int32_t q = AX_.readResetEncoder(0);
-    int32_t v_moteur = q * 1000.0 / PASPARTOUR / RAPPORTVITESSE / 200.0;
-    return (double)v_moteur;
+    int32_t position_encodeur = AX_.readResetEncoder(0);
+    double v_moteur = position_encodeur / RAPPORTVITESSE / PASPARTOUR * PI * DIAMETRE_ROUE / dt * 1000;
+    return v_moteur;
   }
 }
+
 void PIDcommand(double cmd){
   AX_.setMotorPWM(0, cmd);
 }
+
 void PIDgoalReached(){
-  if (pid_.isAtGoal()) {
-    AX_.setMotorPWM(0, 0);
-  }
+  // TODO
 }
