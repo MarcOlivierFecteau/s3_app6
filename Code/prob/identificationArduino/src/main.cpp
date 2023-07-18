@@ -21,6 +21,8 @@
 #define PASPARTOUR      64          // Nombre de pas par tour du moteur
 #define RAPPORTVITESSE  19          // Rapport de vitesse du moteur
 
+#define DIAMETRE_ROUE   0.09       // Diametre de la roue en m
+
 /*---------------------------- Variables globales ---------------------------*/
 
 ArduinoX AX_;                       // Objet arduinoX
@@ -43,6 +45,8 @@ float pulsePWM_ = 0;                // Amplitude de la tension au moteur [-1,1]
 float Axyz[3];                      // Tableau pour accelerometre
 float Gxyz[3];                      // Tableau pour giroscope
 float Mxyz[3];                      // Tableau pour magnetometre
+
+static uint32_t lastTime = 0;       // Temps de la derniere lecture de l'encodeur
 
 /*------------------------- Prototypes de fonctions -------------------------*/
 
@@ -209,11 +213,19 @@ void readMsg(){
 
 // Fonctions pour le PID
 double PIDmeasurement(){
-  // TODO
+  if (millis() - lastTime >= 200)
+  {
+    lastTime = millis();
+    int32_t q = AX_.readResetEncoder(0);
+    int32_t v_moteur = q * 1000.0 / PASPARTOUR / RAPPORTVITESSE / 200.0;
+    return (double)v_moteur;
+  }
 }
 void PIDcommand(double cmd){
   AX_.setMotorPWM(0, cmd);
 }
 void PIDgoalReached(){
-  // TODO
+  if (pid_.isAtGoal()) {
+    AX_.setMotorPWM(0, 0);
+  }
 }
