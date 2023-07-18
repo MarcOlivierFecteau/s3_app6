@@ -212,7 +212,7 @@ double PIDmeasurement(){
   // TODO
 }
 void PIDcommand(double cmd){
-  Ax_.setMotorPWM(0, cmd);
+  AX_.setMotorPWM(0, cmd);
 }
 void PIDgoalReached(){
   // TODO
