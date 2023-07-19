@@ -1,4 +1,4 @@
-# PID avec P = -0.5, I = 0, D = 0, donc sans I ou D
+# PID avec K_P = 0.001, K_I = 0.0001, K_D = 0.0001
 # Auteurs: Marc-Olivier Fecteau (FECM0701), Gabriel Aubut (AUBG3402)
 
 LDA R1,	$V_MOTEUR	# R1 = mem($V_MOTEUR)
