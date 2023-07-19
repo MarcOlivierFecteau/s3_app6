@@ -236,4 +236,5 @@ void PIDcommand(double cmd){
 
 void PIDgoalReached(){
   AX_.setMotorPWM(0, 0);
+  pid_.setGoal(0);
 }
