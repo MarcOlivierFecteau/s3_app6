@@ -14,7 +14,7 @@ using namespace s3gro;
 std::thread t_csv_;
 std::mutex mutex_;
 std::condition_variable cv_;
-#define ID_MOTEUR_DESIRE 0 // ID du moteur pour filtrage des données (0 à n)
+int id_moteur_filtre = 0; // Numéro du moteur à filtrer
 
 
 RobotDiag::RobotDiag()
@@ -86,21 +86,20 @@ void RobotDiag::export_loop() {
     fprintf(out, "motor_id;t;pos;vel;cmd\n");
 
     // Synchronisation et écriture.
-    while(run_) // TO DO : verifier si faut mettre une while(1) ou autre chose
+    while(run_) // l'utilisation d'un booléen permet d'arrêter le thread
     {
         std::unique_lock<std::mutex> lock(mutex_);
         cv_.wait(lock, [] { return !queue_.empty(); });
         if (!queue_.empty())
         {
-            if (queue_.front().id == ID_MOTEUR_DESIRE) // On peut modifier le numéro du moteur désiré au début du code
+            if (queue_.front().id == id_moteur_filtre) // On peut modifier le numéro du moteur désiré dans Qt
             {
-                {
-                    fprintf(out, "%d;%f;%f;%f;%f;\n",queue_.front().id,queue_.front().t,queue_.front().cur_cmd,queue_.front().cur_pos,queue_.front().cur_vel);
+                fprintf(out, "%d;%f;%f;%f;%f;\n",queue_.front().id,queue_.front().t,queue_.front().cur_cmd,queue_.front().cur_pos,queue_.front().cur_vel);
 
-                }
             }
             queue_.pop();
         }
     }
     fclose(out);
 }
+
