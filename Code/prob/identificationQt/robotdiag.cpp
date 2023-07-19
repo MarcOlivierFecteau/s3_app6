@@ -10,7 +10,7 @@
 
 using namespace s3gro;
 
-// Code a rajouter
+// Variables globales
 std::thread t_csv_;
 std::mutex mutex_;
 std::condition_variable cv_;
@@ -34,14 +34,14 @@ RobotDiag::~RobotDiag() {
 }
 
 void RobotDiag::push_event(RobotState new_robot_state) {
-    std::unique_lock<std::mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
 
     // Conserve toutes les données
     data_.push_back(new_robot_state);
 
     // Ajoute le dernier événement à la file d'exportation
     queue_.push(new_robot_state);
-    cv_.notify_one();
+    cv_.notify_one();   // Signale qu'une nouvelle donnée est disponible
 }
 
 void RobotDiag::set_csv_filename(const std::string& file_name) {
@@ -88,6 +88,7 @@ void RobotDiag::export_loop() {
     // Synchronisation et écriture.
     while(run_) // TO DO : verifier si faut mettre une while(1) ou autre chose
     {
+        std::unique_lock<std::mutex> lock(mutex_);
         cv_.wait(lock, [] { return !queue_.empty(); });
         if (!queue_.empty())
         {
