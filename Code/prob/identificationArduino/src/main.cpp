@@ -222,8 +222,8 @@ double PIDmeasurement(){
     uint32_t dt = millis() - lastTime;
     lastTime = millis();
     int32_t position_encodeur = AX_.readResetEncoder(0);
-    distance_vehicule += position_encodeur / RAPPORTVITESSE / PASPARTOUR * PI * DIAMETRE_ROUE;  // "position du moteur"
-    double v_moteur = distance_vehicule / dt * 1000;
+    distance_vehicule += position_encodeur / RAPPORTVITESSE / PASPARTOUR * PI * DIAMETRE_ROUE;  // "position du moteur" (m)
+    double v_moteur = distance_vehicule / dt * 1000;  // vitesse du moteur (m/s)
     return v_moteur;
   }
 }
