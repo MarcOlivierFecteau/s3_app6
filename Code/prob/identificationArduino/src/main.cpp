@@ -162,8 +162,9 @@ void sendMsg() {
   doc["gyroZ"] = imu_.getGyroZ();
   doc["isGoal"] = pid_.isAtGoal();
   doc["actualTime"] = pid_.getActualDt();
-  doc["currentPosition"] = distance_vehicule;
-  doc["currentCommand"] = CMD;
+  doc["cur_pos"] = distance_vehicule;
+  doc["cur_vel"] = PIDmeasurement();
+  doc["cmd"] = CMD;
 
   // Serialisation
   serializeJson(doc, Serial);
@@ -233,5 +234,5 @@ void PIDcommand(double cmd){
 }
 
 void PIDgoalReached(){
-  Ax_setMotorPRM(0, 0);
+  AX_.setMotorPWM(0, 0);
 }
