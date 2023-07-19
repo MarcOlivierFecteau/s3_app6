@@ -229,7 +229,7 @@ double PIDmeasurement(){
 }
 
 void PIDcommand(double cmd){
-  AX_.setMotorPWM(0, cmd);
+  AX_.setMotorPWM(0, -cmd); // Le sens de rotation des roues est inversé par rapport au sens de rotation du moteur
 }
 
 void PIDgoalReached(){
