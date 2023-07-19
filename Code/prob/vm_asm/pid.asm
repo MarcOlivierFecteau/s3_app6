@@ -10,7 +10,7 @@ STO $K_D, R3        # mem($K_D) = R3 = K_D
 LDA R1,	$V_MOTEUR	# R1 = mem($V_MOTEUR)
 LDA R2, $V_CIBLE	# R2 = mem($V_CIBLE)
 LDA R3, $I_t		# R3 = mem($I_t)
-LDC R4, 0			# R4 = 0
+LDC R4, 0			# R4 = 0 (Buffer)
 SUB R2, R1			# R2 = V_CIBLE(t) - v_mot(t) = e(t)
 LDA R1,	$E_PREV		# R1 = mem($E_PREV)
 ADD R4, R2			# R4 = R4 + e(t) = e(t)
