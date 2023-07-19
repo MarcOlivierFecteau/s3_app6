@@ -49,6 +49,7 @@ float Mxyz[3];                      // Tableau pour magnetometre
 static uint32_t lastTime = 0;       // Temps de la derniere lecture de l'encodeur
 static double distance_vehicule = 0;  // Distance parcourue par le vehicule
 double CMD = 1;                     // Commande du PID
+std::thread t_shutdown;        // Thread pour la fonction PIDgoalReached
 
 /*------------------------- Prototypes de fonctions -------------------------*/
 
@@ -233,8 +234,16 @@ void PIDcommand(double cmd){
 }
 
 void PIDgoalReached(){
-  if (pid_.isAtGoal())
-  {
-    // TODO: arrêter le moteur, la simulation, et l'écriture dans le fichier CSV après 3 secondes
+  if (pid_.isAtGoal()) {
+    uint32_t shutdown_timer-start = millis();
+    while(1) {                                                // Attend 3 secondes avant de fermer le programme
+      if (millis() - shutdown_timer-start >= 3000) {
+        AX_.setMotorPWM(0, 0);
+        AX_.setMotorPWM(1, 0);
+        t_shutdown_ = std::thread(&RobotDiag::~RobotDiag,this);
+        t_shutdown_.join();
+        break;
+      }
+    }
   }
 }
