@@ -164,7 +164,7 @@ void sendMsg() {
   doc["actualTime"] = pid_.getActualDt();
   doc["cur_pos"] = distance_vehicule;
   doc["cur_vel"] = PIDmeasurement();
-  doc["cmd"] = CMD;
+  doc["cmd"] = pulsePWM_;
 
   // Serialisation
   serializeJson(doc, Serial);
@@ -231,6 +231,7 @@ double PIDmeasurement(){
 
 void PIDcommand(double cmd){
   AX_.setMotorPWM(0, cmd);
+  pulsePWM_ = cmd;
 }
 
 void PIDgoalReached(){
