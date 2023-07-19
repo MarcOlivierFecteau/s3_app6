@@ -49,6 +49,7 @@ float Mxyz[3];                      // Tableau pour magnetometre
 static uint32_t lastTime = 0;       // Temps de la derniere lecture de l'encodeur
 static double distance_vehicule = 0;  // Distance parcourue par le vehicule
 double CMD = 1;                     // Commande du PID
+std::thread t_shutdown;        // Thread pour la fonction PIDgoalReached
 
 /*------------------------- Prototypes de fonctions -------------------------*/
 
@@ -222,16 +223,37 @@ double PIDmeasurement(){
     uint32_t dt = millis() - lastTime;
     lastTime = millis();
     int32_t position_encodeur = AX_.readResetEncoder(0);
+<<<<<<< HEAD
     distance_vehicule += (double)position_encodeur / (double)RAPPORTVITESSE / (double)PASPARTOUR * (double)PI * (double)DIAMETRE_ROUE;  // "position du moteur"
     double v_moteur = distance_vehicule / dt * 1000;
+=======
+    distance_vehicule += position_encodeur / RAPPORTVITESSE / PASPARTOUR * PI * DIAMETRE_ROUE;  // "position du moteur" (m)
+    double v_moteur = distance_vehicule / dt * 1000;  // vitesse du moteur (m/s)
+>>>>>>> 65d2380de4bfe5e0aba166d5ae4f7c50fcc532f8
     return v_moteur;
   }
 }
 
 void PIDcommand(double cmd){
-  AX_.setMotorPWM(0, cmd);
+  AX_.setMotorPWM(0, -cmd); // Le sens de rotation des roues est inversé par rapport au sens de rotation du moteur
 }
 
 void PIDgoalReached(){
+<<<<<<< HEAD
   Ax_setMotorPRM(0, 0);
 }
+=======
+  if (pid_.isAtGoal()) {
+    uint32_t shutdown_timer-start = millis();
+    while(1) {                                                // Attend 3 secondes avant de fermer le programme
+      if (millis() - shutdown_timer-start >= 3000) {
+        AX_.setMotorPWM(0, 0);
+        AX_.setMotorPWM(1, 0);
+        t_shutdown_ = std::thread(&RobotDiag::~RobotDiag,this);
+        t_shutdown_.join();
+        break;
+      }
+    }
+  }
+}
+>>>>>>> 65d2380de4bfe5e0aba166d5ae4f7c50fcc532f8

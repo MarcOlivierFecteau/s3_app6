@@ -21,7 +21,7 @@ RobotDiag::RobotDiag()
 {
     // Démarre le simulateur:
     // TODO: Supprimer cette ligne si vous testez avec un seul moteur
-    robotsim::init(this, 1, 10, 3);   // Spécifie le nombre de moteurs à
+    robotsim::init(this, 8, 10, 3);   // Spécifie le nombre de moteurs à
                                       // simuler (8) et le délai moyen entre
                                       // les événements (10 ms) plus ou moins
                                       // un nombre aléatoire (3 ms).
@@ -89,7 +89,11 @@ void RobotDiag::export_loop() {
     while(run_) // l'utilisation d'un booléen permet d'arrêter le thread
     {
         std::unique_lock<std::mutex> lock(mutex_);
+<<<<<<< HEAD
         cv_.wait(lock, [this] { return !queue_.empty(); });
+=======
+        cv_.wait(lock, [this] { return !queue_.empty(); }); // 'this' est nécessaire. Autrement, Qt renvoie une erreur de compilation.
+>>>>>>> 65d2380de4bfe5e0aba166d5ae4f7c50fcc532f8
         if (!queue_.empty())
         {
             if (queue_.front().id == id_moteur_filtre) // On peut modifier le numéro du moteur désiré dans Qt
