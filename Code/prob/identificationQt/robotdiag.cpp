@@ -10,7 +10,23 @@
 
 using namespace s3gro;
 
-RobotDiag::RobotDiag(){}
+// Code a rajouter
+std::thread myThread1;
+std::mutex m;
+std::condition_variable cv;
+std::unique_lock<std::mutex> lock(m, std::defer_lock);
+
+
+
+RobotDiag::RobotDiag()
+{
+    // Démarre le simulateur:
+    // TODO: Supprimer cette ligne si vous testez avec un seul moteur
+    robotsim::init(this, 8, 10, 3);   // Spécifie le nombre de moteurs à
+                                      // simuler (1) et le délai moyen entre
+                                      // les événements (10 ms) plus ou moins
+                                      // un nombre aléatoire (3 ms).
+}
 
 // Le destructeur sera normalement appellé à la fermeture de l'application.
 // Écrit des statistiques à l'écran.
@@ -19,11 +35,14 @@ RobotDiag::~RobotDiag() {
 }
 
 void RobotDiag::push_event(RobotState new_robot_state) {
+    m.lock();
     // Conserve toutes les données
     data_.push_back(new_robot_state);
 
     // Ajoute le dernier événement à la file d'exportation
     queue_.push(new_robot_state);
+    cv.notify_one();
+    m.unlock();
 }
 
 void RobotDiag::set_csv_filename(const std::string& file_name) {
@@ -35,15 +54,8 @@ void RobotDiag::start_recording() {
     // de la fermeture pour interrompre le fil d'exportation).
     run_ = true;
 
-    // Démarre le simulateur:
-    // TODO: Supprimer cette ligne si vous testez avec un seul moteur
-    // robotsim::init(this, 1, 10, 3);   // Spécifie le nombre de moteurs à 
-                                      // simuler (1) et le délai moyen entre
-                                      // les événements (10 ms) plus ou moins
-                                      // un nombre aléatoire (3 ms).
-
     // TODO : Lancement du fil.
-    
+    myThread1 = std::thread(&RobotDiag::export_loop,this);
 }
 
 void RobotDiag::stop_recording() {
@@ -51,6 +63,8 @@ void RobotDiag::stop_recording() {
     run_ = false;
 
     // TODO : Fermeture du fil.
+    myThread1.join();
+
 
     robotsim::stop_and_join();
 
@@ -76,7 +90,20 @@ void RobotDiag::export_loop() {
     fprintf(out, "motor_id;t;pos;vel;cmd\n");
 
     // TODO: Synchronisation et écriture.
-    
+    while(1) // TO DO : verifier si faut mettre une while(1) ou autre chose
+    {
+        cv.wait(lock);
+        if (!queue_.empty())
+        {
+            if (queue_.front().id == 1) // TO DO : changer le numermo de id
+            {
+                {
+                    fprintf(out, "%d;%f;%f;%f;%f;\n",queue_.front().id,queue_.front().t,queue_.front().cur_cmd,queue_.front().cur_pos,queue_.front().cur_vel);
+
+                }
+            }
+            queue_.pop();
+        }
+    }
     fclose(out);
 }
-
