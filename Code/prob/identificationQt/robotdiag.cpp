@@ -11,19 +11,18 @@
 using namespace s3gro;
 
 // Code a rajouter
-std::thread myThread1;
-std::mutex m;
-std::condition_variable cv;
-std::unique_lock<std::mutex> lock(m, std::defer_lock);
-
+std::thread t_csv_;
+std::mutex mutex_;
+std::condition_variable cv_;
+#define ID_MOTEUR_DESIRE 0 // ID du moteur pour filtrage des données (0 à n)
 
 
 RobotDiag::RobotDiag()
 {
     // Démarre le simulateur:
     // TODO: Supprimer cette ligne si vous testez avec un seul moteur
-    robotsim::init(this, 8, 10, 3);   // Spécifie le nombre de moteurs à
-                                      // simuler (1) et le délai moyen entre
+    robotsim::init(this, 1, 10, 3);   // Spécifie le nombre de moteurs à
+                                      // simuler (8) et le délai moyen entre
                                       // les événements (10 ms) plus ou moins
                                       // un nombre aléatoire (3 ms).
 }
@@ -35,14 +34,14 @@ RobotDiag::~RobotDiag() {
 }
 
 void RobotDiag::push_event(RobotState new_robot_state) {
-    m.lock();
+    std::unique_lock<std::mutex> lock(mutex_);
+
     // Conserve toutes les données
     data_.push_back(new_robot_state);
 
     // Ajoute le dernier événement à la file d'exportation
     queue_.push(new_robot_state);
-    cv.notify_one();
-    m.unlock();
+    cv_.notify_one();
 }
 
 void RobotDiag::set_csv_filename(const std::string& file_name) {
@@ -54,17 +53,14 @@ void RobotDiag::start_recording() {
     // de la fermeture pour interrompre le fil d'exportation).
     run_ = true;
 
-    // TODO : Lancement du fil.
-    myThread1 = std::thread(&RobotDiag::export_loop,this);
+    t_csv_ = std::thread(&RobotDiag::export_loop,this); // Lancement du fil
 }
 
 void RobotDiag::stop_recording() {
     // Indique que le système de diagnostic doit être arrêté.
     run_ = false;
 
-    // TODO : Fermeture du fil.
-    myThread1.join();
-
+    t_csv_.join();  // Fermeture du fil
 
     robotsim::stop_and_join();
 
@@ -89,13 +85,13 @@ void RobotDiag::export_loop() {
     // En-tête du fichier CSV, respectez le format.
     fprintf(out, "motor_id;t;pos;vel;cmd\n");
 
-    // TODO: Synchronisation et écriture.
-    while(1) // TO DO : verifier si faut mettre une while(1) ou autre chose
+    // Synchronisation et écriture.
+    while(run_) // TO DO : verifier si faut mettre une while(1) ou autre chose
     {
-        cv.wait(lock);
+        cv_.wait(lock, [] { return !queue_.empty(); });
         if (!queue_.empty())
         {
-            if (queue_.front().id == 1) // TO DO : changer le numermo de id
+            if (queue_.front().id == ID_MOTEUR_DESIRE) // On peut modifier le numéro du moteur désiré au début du code
             {
                 {
                     fprintf(out, "%d;%f;%f;%f;%f;\n",queue_.front().id,queue_.front().t,queue_.front().cur_cmd,queue_.front().cur_pos,queue_.front().cur_vel);
