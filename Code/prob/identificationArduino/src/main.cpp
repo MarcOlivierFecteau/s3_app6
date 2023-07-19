@@ -47,6 +47,7 @@ float Gxyz[3];                      // Tableau pour giroscope
 float Mxyz[3];                      // Tableau pour magnetometre
 
 static uint32_t lastTime = 0;       // Temps de la derniere lecture de l'encodeur
+static double distance_vehicule = 0;  // Distance parcourue par le vehicule
 
 /*------------------------- Prototypes de fonctions -------------------------*/
 
@@ -160,6 +161,9 @@ void sendMsg() {
   doc["gyroZ"] = imu_.getGyroZ();
   doc["isGoal"] = pid_.isAtGoal();
   doc["actualTime"] = pid_.getActualDt();
+  doc["currentPosition"] = distance_vehicule;
+  doc["currentSpeed"] = PIDmeasurement();
+  doc["currentCommand"] = pid_.getCommand();
 
   // Serialisation
   serializeJson(doc, Serial);
@@ -218,7 +222,8 @@ double PIDmeasurement(){
     uint32_t dt = millis() - lastTime;
     lastTime = millis();
     int32_t position_encodeur = AX_.readResetEncoder(0);
-    double v_moteur = position_encodeur / RAPPORTVITESSE / PASPARTOUR * PI * DIAMETRE_ROUE / dt * 1000;
+    distance_vehicule += position_encodeur / RAPPORTVITESSE / PASPARTOUR * PI * DIAMETRE_ROUE;  // "position du moteur"
+    double v_moteur = distance_vehicule / dt * 1000;
     return v_moteur;
   }
 }
@@ -228,5 +233,8 @@ void PIDcommand(double cmd){
 }
 
 void PIDgoalReached(){
-  // TODO
+  if (pid_.isAtGoal())
+  {
+    // TODO: arrêter le moteur, la simulation, et l'écriture dans le fichier CSV après 3 secondes
+  }
 }
