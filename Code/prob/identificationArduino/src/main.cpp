@@ -48,6 +48,7 @@ float Mxyz[3];                      // Tableau pour magnetometre
 
 static uint32_t lastTime = 0;       // Temps de la derniere lecture de l'encodeur
 static double distance_vehicule = 0;  // Distance parcourue par le vehicule
+double CMD = 1;                     // Commande du PID
 
 /*------------------------- Prototypes de fonctions -------------------------*/
 
@@ -162,8 +163,7 @@ void sendMsg() {
   doc["isGoal"] = pid_.isAtGoal();
   doc["actualTime"] = pid_.getActualDt();
   doc["currentPosition"] = distance_vehicule;
-  doc["currentSpeed"] = PIDmeasurement();
-  doc["currentCommand"] = pid_.getCommand();
+  doc["currentCommand"] = CMD;
 
   // Serialisation
   serializeJson(doc, Serial);
