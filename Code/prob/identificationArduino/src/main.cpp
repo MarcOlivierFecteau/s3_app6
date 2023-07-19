@@ -222,7 +222,7 @@ double PIDmeasurement(){
     uint32_t dt = millis() - lastTime;
     lastTime = millis();
     int32_t position_encodeur = AX_.readResetEncoder(0);
-    distance_vehicule += position_encodeur / RAPPORTVITESSE / PASPARTOUR * PI * DIAMETRE_ROUE;  // "position du moteur"
+    distance_vehicule += (double)position_encodeur / (double)RAPPORTVITESSE / (double)PASPARTOUR * (double)PI * (double)DIAMETRE_ROUE;  // "position du moteur"
     double v_moteur = distance_vehicule / dt * 1000;
     return v_moteur;
   }
@@ -233,8 +233,5 @@ void PIDcommand(double cmd){
 }
 
 void PIDgoalReached(){
-  if (pid_.isAtGoal())
-  {
-    // TODO: arrêter le moteur, la simulation, et l'écriture dans le fichier CSV après 3 secondes
-  }
+  Ax_setMotorPRM(0, 0);
 }
