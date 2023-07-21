@@ -51,14 +51,18 @@ void RobotDiag::set_csv_filename(const std::string& file_name) {
 void RobotDiag::start_recording() {
     // Indique que le système de diagnostic fonctionne (à mettre à 'false' lors
     // de la fermeture pour interrompre le fil d'exportation).
+    mutex_.lock();  // l'utilisation des lock/unlock permet de protéger la variable run_
     run_ = true;
+    mutex_.unlock();
 
     t_csv_ = std::thread(&RobotDiag::export_loop,this); // Lancement du fil
 }
 
 void RobotDiag::stop_recording() {
     // Indique que le système de diagnostic doit être arrêté.
+    mutex_.lock();  // l'utilisation des lock/unlock permet de protéger la variable run_
     run_ = false;
+    mutex_.unlock();
 
     t_csv_.join();  // Fermeture du fil
 
@@ -86,8 +90,10 @@ void RobotDiag::export_loop() {
     fprintf(out, "motor_id;t;pos;vel;cmd\n");
 
     // Synchronisation et écriture.
+    mutex_.lock();  // l'utilisation des lock/unlock permet de protéger la variable run_
     while(run_) // l'utilisation d'un booléen permet d'arrêter le thread
     {
+        mutex_.unlock();
         std::unique_lock<std::mutex> lock(mutex_);
         cv_.wait(lock, [this] { return !queue_.empty(); }); // 'this' est nécessaire. Autrement, Qt renvoie une erreur de compilation.
         if (!queue_.empty())
@@ -99,7 +105,9 @@ void RobotDiag::export_loop() {
             }
             queue_.pop();
         }
+        mutex_.lock();
     }
+    mutex_.unlock();
     fclose(out);
 }
 
