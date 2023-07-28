@@ -19,7 +19,9 @@
 #define POTPIN          A5          // Port analogique pour le potentiometre
 
 #define PASPARTOUR      64          // Nombre de pas par tour du moteur
-#define RAPPORTVITESSE  50          // Rapport de vitesse du moteur
+#define RAPPORTVITESSE  19          // Rapport de vitesse du moteur
+
+#define DIAMETRE_ROUE   0.09       // Diametre de la roue en m
 
 /*---------------------------- Variables globales ---------------------------*/
 
@@ -43,6 +45,10 @@ float pulsePWM_ = 0;                // Amplitude de la tension au moteur [-1,1]
 float Axyz[3];                      // Tableau pour accelerometre
 float Gxyz[3];                      // Tableau pour giroscope
 float Mxyz[3];                      // Tableau pour magnetometre
+
+static uint32_t lastTime = 0;       // Temps de la derniere lecture de l'encodeur
+static double distance_vehicule = 0;  // Distance parcourue par le vehicule
+double CMD = 1;                     // Commande du PID
 
 /*------------------------- Prototypes de fonctions -------------------------*/
 
@@ -156,6 +162,9 @@ void sendMsg() {
   doc["gyroZ"] = imu_.getGyroZ();
   doc["isGoal"] = pid_.isAtGoal();
   doc["actualTime"] = pid_.getActualDt();
+  doc["cur_pos"] = distance_vehicule;
+  doc["cur_vel"] = PIDmeasurement();
+  doc["cmd"] = pulsePWM_;
 
   // Serialisation
   serializeJson(doc, Serial);
@@ -209,11 +218,23 @@ void readMsg(){
 
 // Fonctions pour le PID
 double PIDmeasurement(){
-  // TODO
+  if (millis() - lastTime >= 200)
+  {
+    uint32_t dt = millis() - lastTime;
+    lastTime = millis();
+    int32_t position_encodeur = AX_.readResetEncoder(0);
+    distance_vehicule += (double)position_encodeur / (double)RAPPORTVITESSE / (double)PASPARTOUR * PI * (double)DIAMETRE_ROUE;  // "position du moteur"
+    double v_moteur = distance_vehicule / (double)dt * 1000;
+    return v_moteur;
+  }
 }
+
 void PIDcommand(double cmd){
-  // TODO
+  AX_.setMotorPWM(0, cmd);
+  pulsePWM_ = cmd;
 }
+
 void PIDgoalReached(){
-  // TODO
+  AX_.setMotorPWM(0, 0);
+  pid_.setGoal(0);
 }

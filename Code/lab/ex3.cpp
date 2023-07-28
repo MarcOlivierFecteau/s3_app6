@@ -20,7 +20,7 @@ int main(int argc, char** argv)
         // ajoute des espaces à gauche.
         // Ceci permet d'aligner visuellement les valeurs en colonnes.
         printf("x: %9f, sin(x * pi): %9f ", x, y);
-        if (y == 0.0) {                           
+        if (y >= -0.0001 && y <= 0.0001) {                           
             printf("!!!");                        
         }                                         
         printf("\n");
